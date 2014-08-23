@@ -26,6 +26,6 @@ module.exports = (robot) ->
     text = msg.match[1]
     number = msg.match[2]
     github.get "repos/nekova/aibis/issues/#{number}", (issue) ->
-      body = "#{issue.body} \n\- \[ \]#{text}"
+      body = "#{issue.body} \n\- \[ \] #{text}"
       github.patch "repos/nekova/aibis/issues/#{number}", {body: body}, (_) ->
         msg.send "Added #{text}"
