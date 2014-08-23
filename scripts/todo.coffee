@@ -15,7 +15,7 @@ module.exports = (robot) ->
     github.get "repos/nekova/aibis/issues/#{msg.match[1]}", (issue) ->
       msg.send issue.body
 
-  robot.respond /todo list$/i, (msg) ->
+  robot.respond /issue list$/i, (msg) ->
     github.get "repos/nekova/aibis/issues?state=open", (issues) ->
       text = ""
       for issue, n in issues by -1
@@ -28,4 +28,28 @@ module.exports = (robot) ->
     github.get "repos/nekova/aibis/issues/#{number}", (issue) ->
       body = "#{issue.body} \n\- \[ \] #{text}"
       github.patch "repos/nekova/aibis/issues/#{number}", {body: body}, (_) ->
+        msg.send "Added #{text}"
+
+  robot.respond /todo list$/i, (msg) ->
+    github.get "repos/nekova/aibis/issues?state=open", (issues) ->
+      body = issues[0].body
+      todos = body.split /\- \[ \] /
+      text = ""
+      for t,i in todos
+        text += "#{i+1}) " + t + "\n"
+      msg.send text
+
+  robot.respond /todo done (\d+)$/i, (msg) ->
+    id = msg.match[1] - 1
+    github.get "repos/nekova/aibis/issues?state=open", (issues) ->
+      body = issues[0].body
+      number = issues[0].number
+      todos = body.split /\- \[ \] /
+      text = ""
+      for t, i in todos
+        if i is id
+          text += "- [x] " + t
+        else
+          text += "- [ ] " + t
+      github.patch "repos/nekova/aibis/issues/#{number}", {body: text}, (_) ->
         msg.send "Added #{text}"
