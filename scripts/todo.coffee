@@ -33,23 +33,28 @@ module.exports = (robot) ->
   robot.respond /todo list$/i, (msg) ->
     github.get "repos/nekova/aibis/issues?state=open", (issues) ->
       body = issues[0].body
-      todos = body.split /\- \[ \] /
+      todos = body.match(/\- \[ \] .+/g)
       text = ""
-      for t,i in todos
-        text += "#{i+1}) " + t + "\n"
-      msg.send text
+      if todos?
+        for t,i in todos
+          text += "#{i+1}) " + t + "\n"
+        msg.send text
+      else
+        msg.send "None"
 
   robot.respond /todo done (\d+)$/i, (msg) ->
     id = msg.match[1] - 1
     github.get "repos/nekova/aibis/issues?state=open", (issues) ->
       body = issues[0].body
       number = issues[0].number
-      todos = body.split /\- \[ \] /
+      todos = body.split "\n"
+      count = 0
       text = ""
-      for t, i in todos
-        if i is id
-          text += "- [x] " + t
-        else
-          text += "- [ ] " + t
-      github.patch "repos/nekova/aibis/issues/#{number}", {body: text}, (_) ->
-        msg.send "Added #{text}"
+      for t in todos
+        if (/\- \[ \] /g).test t
+          if count is id
+            t = t.replace(/\- \[ \] /, "- [x] ")
+          count += 1
+        text += t + "\n"
+      github.patch "repos/nekova/aibis/issues/#{number}", {body: text}, () ->
+        msg.send "Done #{id+1}"
