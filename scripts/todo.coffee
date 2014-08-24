@@ -34,11 +34,11 @@ module.exports = (robot) ->
   robot.respond /tasks$/i, (msg) ->
     github.get "repos/nekova/aibis/issues?state=open", (issues) ->
       body = issues[0].body
-      todos = body.match(/\- \[ \] .+/g)
+      tasks = body.match(/\- \[ \] .+/g)
       text = ""
-      if todos?
-        for t,i in todos
-          text += "#{i+1}) " + t + "\n"
+      if tasks?
+        for task,i in tasks
+          text += "#{i+1}) #{task}\n"
         msg.send text
       else
         msg.send "None"
@@ -46,16 +46,17 @@ module.exports = (robot) ->
   robot.respond /done (\d+)$/i, (msg) ->
     id = msg.match[1] - 1
     github.get "repos/nekova/aibis/issues?state=open", (issues) ->
-      body = issues[0].body
-      number = issues[0].number
-      todos = body.split "\n"
+      issue = issues[0]
+      number = issue.number
+      tasks = issue.body.split("\n")
       count = 0
-      text = ""
-      for t in todos
-        if (/\- \[ \] /g).test t
+      regexp = /\- \[ \] /
+      body = ""
+      for task in tasks
+        if (regexp).test(task)
           if count is id
-            t = t.replace(/\- \[ \] /, "- [x] ")
+            task = task.replace(regexp, "- [x] ")
           count += 1
-        text += t + "\n"
-      github.patch "repos/nekova/aibis/issues/#{number}", {body: text}, () ->
+        body += "#{task}\n"
+      github.patch "repos/nekova/aibis/issues/#{number}", {body: body}, () ->
         msg.send "Done #{id+1}"
