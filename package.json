@@ -29,7 +29,8 @@
     "hubot-google-calendar": "git://github.com/nekova/hubot-google-calendar",
     "hubot-idobata": "^0.1.0",
     "hubot-scripts": ">= 2.5.0 < 3.0.0",
-    "hubot-slack": "^2.1.1"
+    "hubot-slack": "^2.1.1",
+    "hubot-url2ss": "git://github.com/nekova/hubot-url2ss"
   },
   "engines": {
     "node": ">= 0.8.x",
